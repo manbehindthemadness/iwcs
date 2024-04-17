@@ -10,14 +10,20 @@ def mac(mac_address: str, interface: str = 'wlan0') -> dict:
     """
     Gather the information in relation to a single sensor by MAC address.
     """
-    client_info_output = subprocess.check_output(["/sbin/iw", "dev", interface, "station", "get", mac_address]).decode(
-        "utf-8")
-    client_info_lines = client_info_output.split("\n")
-    client_info_dict = {}
-    for line in client_info_lines:
-        if ":" in line:
-            key, value = line.split(":", 1)
-            client_info_dict[key.strip()] = value.strip()
+    client_info_dict = dict()
+    try:
+        client_info_output = subprocess.check_output(
+            ["/sbin/iw", "dev", interface, "station", "get", mac_address]
+        ).decode(
+            "utf-8")
+        client_info_lines = client_info_output.split("\n")
+        client_info_dict = {}
+        for line in client_info_lines:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                client_info_dict[key.strip()] = value.strip()
+    except subprocess.CalledProcessError:
+        print(f'client {mac_address} not found on interface {interface}')
     return client_info_dict
 
 
@@ -37,7 +43,9 @@ def info(interface: str = 'wlan0') -> dict:
 
 
 def test():
-    # Example usage:
+    """
+    Example usage:
+    """
     interface = "wlan0"  # Replace with your wireless interface
     connected_clients_info = info(interface)
     print(connected_clients_info)
